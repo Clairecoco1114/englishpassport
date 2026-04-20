@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>冷启专家 · 作战地图</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0d0d12;
+    --surface: #13131c;
+    --border: #1e1e2e;
+    --accent: #c8a96e;
+    --accent2: #7eb8c9;
+    --accent3: #9b8ec4;
+    --you: #e8c87a;
+    --you-bg: rgba(232,200,122,0.08);
+    --you-border: rgba(232,200,122,0.35);
+    --others: #6b7280;
+    --text: #e2e2e8;
+    --muted: #6b7280;
+    --green: #6ec89b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif SC', serif;
+    min-height: 100vh;
+    padding: 40px 24px 80px;
+    line-height: 1.6;
+  }
+
+  /* header */
+  .header {
+    text-align: center;
+    margin-bottom: 56px;
+    animation: fadeDown 0.7s ease both;
+  }
+  .header-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .header h1 {
+    font-size: clamp(24px, 5vw, 38px);
+    font-weight: 700;
+    color: var(--you);
+    letter-spacing: 0.04em;
+  }
+  .header-sub {
+    font-size: 13px;
+    color: var(--muted);
+    margin-top: 10px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* legend */
+  .legend {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 48px;
+    animation: fadeDown 0.7s 0.1s ease both;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+  }
+  .legend-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-dot.you { background: var(--you); }
+  .legend-dot.bd { background: var(--accent2); }
+  .legend-dot.am { background: var(--accent3); }
+  .legend-dot.ops { background: var(--green); }
+  .legend-dot.sys { background: #e87a7a; }
+
+  /* stages */
+  .stages {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 860px;
+    margin: 0 auto;
+  }
+
+  .stage-block {
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    animation: fadeUp 0.5s ease both;
+  }
+  .stage-block:nth-child(1) { animation-delay: 0.1s; }
+  .stage-block:nth-child(2) { animation-delay: 0.2s; }
+  .stage-block:nth-child(3) { animation-delay: 0.3s; }
+  .stage-block:nth-child(4) { animation-delay: 0.4s; }
+  .stage-block:nth-child(5) { animation-delay: 0.5s; }
+
+  .stage-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 22px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--surface);
+    transition: background 0.2s;
+  }
+  .stage-header:hover { background: #181824; }
+
+  .stage-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .stage-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+    flex: 1;
+  }
+  .stage-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .tag-build { background: rgba(126,184,201,0.12); color: var(--accent2); }
+  .tag-diag  { background: rgba(155,142,196,0.12); color: var(--accent3); }
+  .tag-infra { background: rgba(200,169,110,0.12); color: var(--accent); }
+  .tag-ops   { background: rgba(110,200,155,0.12); color: var(--green); }
+  .tag-exit  { background: rgba(232,122,122,0.12); color: #e87a7a; }
+
+  .chevron {
+    font-size: 12px;
+    color: var(--muted);
+    transition: transform 0.3s;
+    font-family: 'Space Mono', monospace;
+  }
+  .stage-block.open .chevron { transform: rotate(180deg); }
+
+  .stage-body {
+    display: none;
+    padding: 0 22px 20px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+  }
+  .stage-block.open .stage-body { display: block; }
+
+  /* nodes */
+  .node-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-top: 16px;
+  }
+
+  .node {
+    display: grid;
+    grid-template-columns: 20px 1fr auto;
+    gap: 12px;
+    align-items: start;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .node:hover { background: rgba(255,255,255,0.02); }
+
+  .node.is-you {
+    background: var(--you-bg);
+    border-color: var(--you-border);
+  }
+  .node.is-you:hover { background: rgba(232,200,122,0.12); }
+
+  .node-bullet {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+  .node-bullet.you  { background: var(--you); box-shadow: 0 0 6px var(--you); }
+  .node-bullet.bd   { background: var(--accent2); }
+  .node-bullet.am   { background: var(--accent3); }
+  .node-bullet.ops  { background: var(--green); }
+  .node-bullet.sys  { background: #e87a7a; }
+  .node-bullet.all  { background: var(--muted); }
+
+  .node-content {}
+  .node-title {
+    font-size: 14px;
+    color: var(--text);
+    font-weight: 500;
+  }
+  .node.is-you .node-title {
+    color: var(--you);
+    font-weight: 600;
+  }
+
+  .node-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+  .meta-chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .chip-who { background: rgba(255,255,255,0.05); color: var(--muted); }
+  .chip-out { background: rgba(126,184,201,0.08); color: var(--accent2); }
+  .chip-note { background: rgba(200,169,110,0.08); color: var(--accent); }
+  .chip-warn { background: rgba(232,122,122,0.08); color: #e87a7a; }
+
+  .node-output {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    text-align: right;
+    white-space: nowrap;
+    padding-top: 4px;
+  }
+
+  /* connector between stages */
+  .connector {
+    display: flex;
+    justify-content: center;
+    color: var(--border);
+    font-size: 20px;
+    padding: 2px 0;
+  }
+
+  /* you-summary card */
+  .you-card {
+    max-width: 860px;
+    margin: 48px auto 0;
+    background: var(--you-bg);
+    border: 1px solid var(--you-border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    animation: fadeUp 0.5s 0.6s ease both;
+  }
+  .you-card h2 {
+    color: var(--you);
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    margin-bottom: 20px;
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+  }
+  .you-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 600px) { .you-grid { grid-template-columns: 1fr; } }
+
+  .you-col h3 {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 10px;
+  }
+  .you-col ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .you-col ul li {
+    font-size: 13px;
+    color: var(--text);
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .you-col ul li::before {
+    content: '›';
+    position: absolute;
+    left: 0;
+    color: var(--you);
+  }
+
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .open-all-btn {
+    display: block;
+    margin: 0 auto 32px;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 8px 20px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    animation: fadeDown 0.7s 0.15s ease both;
+  }
+  .open-all-btn:hover { border-color: var(--you); color: var(--you); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-eyebrow">Nexad Agency · 售后全流程</div>
+  <h1>冷启专家作战地图</h1>
+  <div class="header-sub">你在哪里出手 · 谁来配合你 · 你要给出什么</div>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot you"></div>你（冷启专家）</div>
+  <div class="legend-item"><div class="legend-dot bd"></div>BD</div>
+  <div class="legend-item"><div class="legend-dot am"></div>AM</div>
+  <div class="legend-item"><div class="legend-dot ops"></div>运营</div>
+  <div class="legend-item"><div class="legend-dot sys"></div>系统专项（Lorraine/eng）</div>
+</div>
+
+<button class="open-all-btn" onclick="toggleAll()">展开全部阶段</button>
+
+<div class="stages" id="stages">
+
+  <!-- 建档 -->
+  <div class="stage-block" onclick="toggle(this)">
+    <div class="stage-header">
+      <span class="stage-icon">📁</span>
+      <span class="stage-name">建档阶段</span>
+      <span class="stage-tag tag-build">建档</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+      <div class="node-list">
+        <div class="node">
+          <div class="node-bullet bd"></div>
+          <div class="node-content">
+            <div class="node-title">MAX 完成 KMS1，移交售前文档</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">MAX → BD</span>
+              <span class="meta-chip chip-note">你还不在场</span>
+            </div>
+          </div>
+          <div class="node-output">售前文档</div>
+        </div>
+        <div class="node">
+          <div class="node-bullet bd"></div>
+          <div class="node-content">
+            <div class="node-title">BD 拉客户群 + 发 showcase</div>
+            <div class="node-meta"><span class="meta-chip chip-who">BD</span></div>
+          </div>
+          <div class="node-output">客户群建立</div>
+        </div>
+        <div class="node">
+          <div class="node-bullet am"></div>
+          <div class="node-content">
+            <div class="node-title">AM 建内部群、建客户文件夹、填管理总表</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">AM（Tina维护总表）</span>
+              <span class="meta-chip chip-note">你还不在场</span>
+            </div>
+          </div>
+          <div class="node-output">内部群 + 文件夹</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- 诊断 -->
+  <div class="stage-block" onclick="toggle(this)">
+    <div class="stage-header">
+      <span class="stage-icon">🔍</span>
+      <span class="stage-name">诊断阶段</span>
+      <span class="stage-tag tag-diag">诊断</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+      <div class="node-list">
+
+        <!-- 问卷线 -->
+        <div class="node">
+          <div class="node-bullet bd"></div>
+          <div class="node-content">
+            <div class="node-title">运营+BD 用 ChatGPT agent 预填问卷 → BD 发送给客户 → BD 回收</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">运营 + BD</span>
+              <span class="meta-chip chip-note">你不负责，但要看结果</span>
+            </div>
+          </div>
+          <div class="node-output">客户回填问卷</div>
+        </div>
+
+        <!-- 调研线 -->
+        <div class="node">
+          <div class="node-bullet ops"></div>
+          <div class="node-content">
+            <div class="node-title">运营出三份调研报告：竞品关键词 / 竞品素材 / 产品走查</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">运营</span>
+              <span class="meta-chip chip-note">你的诊断素材，要主动索取</span>
+            </div>
+          </div>
+          <div class="node-output">三份调研报告</div>
+        </div>
+
+        <!-- 冷启核心 -->
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 与客户确认基本投放目标（KPI）</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你主导</span>
+              <span class="meta-chip chip-warn">KPI不清晰 → 先走小额测试（100~200刀）</span>
+            </div>
+          </div>
+          <div class="node-output">目标确认</div>
+        </div>
+
+        <div class="node">
+          <div class="node-bullet am"></div>
+          <div class="node-content">
+            <div class="node-title">AM + eng 收集历史账户数据，完成对接</div>
+            <div class="node-meta"><span class="meta-chip chip-who">AM + eng</span></div>
+          </div>
+          <div class="node-output">数据对接完成</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 链路与埋点预检查（仅老户）</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你主导</span>
+              <span class="meta-chip chip-note">事件链路 / 事件定义 / 权限完整性</span>
+            </div>
+          </div>
+          <div class="node-output">前置排查记录</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 出深度诊断报告</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你主导 + 运营辅助</span>
+              <span class="meta-chip chip-note">可找 William Jin 自动生成初版</span>
+            </div>
+          </div>
+          <div class="node-output">深度诊断报告</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 完成汇报会，敲定渠道和预算</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你主导，客户确认</span>
+            </div>
+          </div>
+          <div class="node-output">渠道 + 预算方案</div>
+        </div>
+
+        <!-- vendor线 -->
+        <div class="node">
+          <div class="node-bullet bd"></div>
+          <div class="node-content">
+            <div class="node-title">BD 询单 → 确认 vendor（24h SLA）</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">BD 全程</span>
+              <span class="meta-chip chip-note">与诊断并行，你不介入</span>
+            </div>
+          </div>
+          <div class="node-output">合作 vendor 确定</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- 基建 -->
+  <div class="stage-block" onclick="toggle(this)">
+    <div class="stage-header">
+      <span class="stage-icon">🏗️</span>
+      <span class="stage-name">基建阶段</span>
+      <span class="stage-tag tag-infra">基建</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+      <div class="node-list">
+
+        <div class="node">
+          <div class="node-bullet sys"></div>
+          <div class="node-content">
+            <div class="node-title">代理开户</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">Lorraine（唯一可操作）</span>
+            </div>
+          </div>
+          <div class="node-output">广告账户</div>
+        </div>
+
+        <div class="node">
+          <div class="node-bullet am"></div>
+          <div class="node-content">
+            <div class="node-title">AM 给 vendor 优化师配马甲号</div>
+            <div class="node-meta"><span class="meta-chip chip-who">AM</span></div>
+          </div>
+          <div class="node-output">马甲号</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 发埋点安装指南给客户</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你主导</span>
+              <span class="meta-chip chip-note">按渠道发对应版本（Meta/Google/TikTok）</span>
+            </div>
+          </div>
+          <div class="node-output">指南文档</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 配置埋点（仅新户）</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你 + 埋点专家</span>
+              <span class="meta-chip chip-note">事件链路 / 事件定义 / 权限完整性</span>
+            </div>
+          </div>
+          <div class="node-output">埋点配置完成</div>
+        </div>
+
+        <div class="node">
+          <div class="node-bullet ops"></div>
+          <div class="node-content">
+            <div class="node-title">运营+eng 对接权限（report/soku/MCP）</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">运营 + eng</span>
+              <span class="meta-chip chip-note">你需要监控是否完成</span>
+            </div>
+          </div>
+          <div class="node-output">权限打通</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 制定广告计划 / 出 media plan</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你主导 + AM 配合</span>
+              <span class="meta-chip chip-note">AI 辅助生成</span>
+            </div>
+          </div>
+          <div class="node-output">广告计划文档</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 确认日报/周报 prompt 初版</div>
+            <div class="node-meta"><span class="meta-chip chip-who">你 + AM</span></div>
+          </div>
+          <div class="node-output">prompt 文档</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 配置广告上线</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你主导</span>
+              <span class="meta-chip chip-warn">上线前必须与客户确认</span>
+            </div>
+          </div>
+          <div class="node-output">广告启动</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- 日常运营 -->
+  <div class="stage-block" onclick="toggle(this)">
+    <div class="stage-header">
+      <span class="stage-icon">📊</span>
+      <span class="stage-name">日常运营阶段</span>
+      <span class="stage-tag tag-ops">日常运营</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+      <div class="node-list">
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 投放首周：involve 资深优化师 review + 给建议</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你 + AM</span>
+              <span class="meta-chip chip-note">重要客户第一周结尾</span>
+            </div>
+          </div>
+          <div class="node-output">优化建议</div>
+        </div>
+
+        <div class="node">
+          <div class="node-bullet am"></div>
+          <div class="node-content">
+            <div class="node-title">AM 给优化师分配 report 账号</div>
+            <div class="node-meta"><span class="meta-chip chip-who">AM</span></div>
+          </div>
+          <div class="node-output">—</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 冷启专家交接给 vendor 优化师</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你 → Vendor</span>
+              <span class="meta-chip chip-warn">交接前2周需群内 review</span>
+            </div>
+          </div>
+          <div class="node-output">项目交接文档</div>
+        </div>
+
+        <div class="node">
+          <div class="node-bullet am"></div>
+          <div class="node-content">
+            <div class="node-title">AM 日报/周报数据洞察与生成</div>
+            <div class="node-meta"><span class="meta-chip chip-who">AM 主导</span></div>
+          </div>
+          <div class="node-output">日报/周报</div>
+        </div>
+
+        <div class="node">
+          <div class="node-bullet sys"></div>
+          <div class="node-content">
+            <div class="node-title">Lorraine 发送账单 + 余额监控</div>
+            <div class="node-meta"><span class="meta-chip chip-who">Lorraine</span></div>
+          </div>
+          <div class="node-output">月账单</div>
+        </div>
+
+        <div class="node is-you">
+          <div class="node-bullet you"></div>
+          <div class="node-content">
+            <div class="node-title">⭐ 第三周：阶段性数据复盘</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">你 + AM</span>
+              <span class="meta-chip chip-note">测试期过半后触发</span>
+            </div>
+          </div>
+          <div class="node-output">阶段性复盘报告</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="connector">↓</div>
+
+  <!-- 退出 -->
+  <div class="stage-block" onclick="toggle(this)">
+    <div class="stage-header">
+      <span class="stage-icon">🚪</span>
+      <span class="stage-name">退出阶段</span>
+      <span class="stage-tag tag-exit">退出</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+      <div class="node-list">
+        <div class="node">
+          <div class="node-bullet ops"></div>
+          <div class="node-content">
+            <div class="node-title">运营确认客户退出方案</div>
+            <div class="node-meta">
+              <span class="meta-chip chip-who">运营</span>
+              <span class="meta-chip chip-note">你已完成交接，不再介入</span>
+            </div>
+          </div>
+          <div class="node-output">退出方案</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 你的总览 -->
+<div class="you-card">
+  <h2>⭐ 冷启专家 · 你的核心职责总览</h2>
+  <div class="you-grid">
+    <div class="you-col">
+      <h3>你要输入什么</h3>
+      <ul>
+        <li>客户回填的 Onboarding 问卷</li>
+        <li>运营出的三份调研报告</li>
+        <li>历史广告账户数据（AM+eng对接后）</li>
+        <li>客户口述的 KPI 目标</li>
+      </ul>
+    </div>
+    <div class="you-col">
+      <h3>你要输出什么</h3>
+      <ul>
+        <li>投放目标确认（书面）</li>
+        <li>深度诊断报告</li>
+        <li>渠道 + 预算方案（汇报会）</li>
+        <li>广告计划 / media plan</li>
+        <li>埋点配置（新户）</li>
+        <li>广告上线配置</li>
+        <li>项目交接文档</li>
+        <li>阶段性复盘报告</li>
+      </ul>
+    </div>
+    <div class="you-col">
+      <h3>谁来配合你</h3>
+      <ul>
+        <li>BD → 推进问卷 / 客户关系维护</li>
+        <li>AM → 数据对接 / 权限 / 日报生成</li>
+        <li>运营 → 调研报告 / 诊断报告辅助</li>
+        <li>Lorraine → 开户（你提需求她操作）</li>
+        <li>eng → 权限对接 / 数据接入</li>
+      </ul>
+    </div>
+    <div class="you-col">
+      <h3>你的关键判断点</h3>
+      <ul>
+        <li>KPI 是否清晰？不清晰先测再投</li>
+        <li>新户 or 老户？决定埋点策略</li>
+        <li>上线前与客户逐一确认</li>
+        <li>交接前2周拉 vendor 进群 review</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggle(el) {
+    el.classList.toggle('open');
+  }
+  let allOpen = false;
+  function toggleAll() {
+    allOpen = !allOpen;
+    document.querySelectorAll('.stage-block').forEach(b => {
+      if (allOpen) b.classList.add('open');
+      else b.classList.remove('open');
+    });
+    document.querySelector('.open-all-btn').textContent = allOpen ? '收起全部阶段' : '展开全部阶段';
+  }
+  // 默认展开诊断和基建
+  document.querySelectorAll('.stage-block')[1].classList.add('open');
+  document.querySelectorAll('.stage-block')[2].classList.add('open');
+</script>
+</body>
+</html>
