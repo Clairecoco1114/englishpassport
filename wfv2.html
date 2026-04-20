@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>冷启专家 · 作战地图 v2</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap');
+
+  :root {
+    --bg: #0d0d12;
+    --surface: #13131c;
+    --surface2: #0f0f18;
+    --border: #1e1e2e;
+    --border2: #252535;
+    --you: #e8c87a;
+    --you-bg: rgba(232,200,122,0.07);
+    --you-border: rgba(232,200,122,0.28);
+    --bd: #7eb8c9;
+    --am: #9b8ec4;
+    --ops: #6ec89b;
+    --sys: #e87a7a;
+    --max: #c8a96e;
+    --text: #dddde8;
+    --muted: #5a5a72;
+    --muted2: #444458;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif SC', serif;
+    min-height: 100vh;
+    padding: 36px 20px 80px;
+    line-height: 1.6;
+  }
+
+  /* ── HEADER ── */
+  .hd {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fd 0.6s ease both;
+  }
+  .hd-eye {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .hd h1 {
+    font-size: clamp(22px, 4.5vw, 34px);
+    font-weight: 700;
+    color: var(--you);
+  }
+  .hd-sub {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 8px;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex;
+    gap: 18px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+    animation: fd 0.6s 0.08s ease both;
+  }
+  .li { display: flex; align-items: center; gap: 7px; font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace; }
+  .ld { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+  .ld.you { background: var(--you); box-shadow: 0 0 5px var(--you); }
+  .ld.bd  { background: var(--bd); }
+  .ld.am  { background: var(--am); }
+  .ld.ops { background: var(--ops); }
+  .ld.sys { background: var(--sys); }
+  .ld.max { background: var(--max); }
+
+  /* ── TOOLBAR ── */
+  .toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 28px;
+    animation: fd 0.6s 0.12s ease both;
+  }
+  .tbtn {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border2);
+    padding: 7px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .tbtn:hover { border-color: var(--you); color: var(--you); }
+  .tbtn.active { border-color: var(--you); color: var(--you); background: var(--you-bg); }
+
+  /* ── MAIN FLOW ── */
+  .flow {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  /* stage accordion */
+  .stage {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    animation: fu 0.5s ease both;
+  }
+  .stage:nth-child(1)  { animation-delay: 0.05s; }
+  .stage:nth-child(3)  { animation-delay: 0.10s; }
+  .stage:nth-child(5)  { animation-delay: 0.15s; }
+  .stage:nth-child(7)  { animation-delay: 0.20s; }
+  .stage:nth-child(9)  { animation-delay: 0.25s; }
+  .stage:nth-child(11) { animation-delay: 0.30s; }
+
+  .stage-hd {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    cursor: pointer;
+    user-select: none;
+    background: var(--surface);
+    transition: background 0.2s;
+  }
+  .stage-hd:hover { background: #161622; }
+  .stage-icon { font-size: 18px; flex-shrink: 0; }
+  .stage-title { font-size: 15px; font-weight: 600; flex: 1; }
+  .stage-badge {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .b-jian  { background: rgba(126,184,201,0.1); color: var(--bd); }
+  .b-zhen  { background: rgba(155,142,196,0.1); color: var(--am); }
+  .b-ji    { background: rgba(200,169,110,0.1); color: var(--max); }
+  .b-ops   { background: rgba(110,200,155,0.1); color: var(--ops); }
+  .b-exit  { background: rgba(232,122,122,0.1); color: var(--sys); }
+  .chevron { font-size: 10px; color: var(--muted); transition: transform 0.3s; }
+  .stage.open .chevron { transform: rotate(180deg); }
+
+  .stage-body {
+    display: none;
+    background: var(--surface2);
+    border-top: 1px solid var(--border);
+    padding: 10px 16px 16px;
+  }
+  .stage.open .stage-body { display: block; }
+
+  /* connector arrow */
+  .arr {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: var(--muted2);
+    font-size: 16px;
+    height: 22px;
+    flex-shrink: 0;
+  }
+
+  /* ── NODE ── */
+  .node {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 10px 12px;
+    border-radius: 9px;
+    border: 1px solid transparent;
+    margin-top: 4px;
+    transition: background 0.15s;
+    position: relative;
+  }
+  .node:hover { background: rgba(255,255,255,0.015); }
+  .node.you {
+    background: var(--you-bg);
+    border-color: var(--you-border);
+  }
+  .node.you:hover { background: rgba(232,200,122,0.11); }
+
+  /* child indented */
+  .node.child {
+    margin-left: 26px;
+    border-left: 2px solid var(--border2);
+    border-radius: 0 9px 9px 0;
+    padding-left: 14px;
+  }
+  .node.child.you {
+    border-left-color: rgba(232,200,122,0.4);
+  }
+
+  /* sub-group label */
+  .sub-label {
+    margin-left: 26px;
+    margin-top: 10px;
+    margin-bottom: 2px;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-left: 14px;
+  }
+
+  .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+  }
+  .dot.you  { background: var(--you); box-shadow: 0 0 5px rgba(232,200,122,0.6); }
+  .dot.bd   { background: var(--bd); }
+  .dot.am   { background: var(--am); }
+  .dot.ops  { background: var(--ops); }
+  .dot.sys  { background: var(--sys); }
+  .dot.max  { background: var(--max); }
+  .dot.mix  { background: var(--muted); }
+
+  .nc { /* node content */ }
+  .nt { /* node title */
+    font-size: 13px;
+    color: var(--text);
+    font-weight: 500;
+    line-height: 1.45;
+  }
+  .node.you .nt { color: var(--you); font-weight: 600; }
+
+  .nm { /* node meta row */
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 5px;
+  }
+  .chip {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+  }
+  .c-who  { background: rgba(255,255,255,0.04); color: var(--muted); }
+  .c-out  { background: rgba(126,184,201,0.07); color: var(--bd); }
+  .c-note { background: rgba(200,169,110,0.07); color: var(--max); }
+  .c-warn { background: rgba(232,122,122,0.07); color: var(--sys); }
+  .c-sla  { background: rgba(110,200,155,0.07); color: var(--ops); }
+
+  /* seq number badge */
+  .seq {
+    display: inline-block;
+    background: var(--border2);
+    color: var(--muted);
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-right: 5px;
+  }
+  .node.you .seq { background: rgba(232,200,122,0.15); color: var(--you); }
+
+  /* parallel tag */
+  .parallel-wrap {
+    margin-top: 6px;
+    border: 1px dashed var(--border2);
+    border-radius: 10px;
+    padding: 8px 10px 10px;
+  }
+  .parallel-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+
+  /* you-summary */
+  .summary {
+    max-width: 900px;
+    margin: 40px auto 0;
+    background: var(--you-bg);
+    border: 1px solid var(--you-border);
+    border-radius: 16px;
+    padding: 26px 28px;
+    animation: fu 0.5s 0.35s ease both;
+  }
+  .summary h2 {
+    color: var(--you);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .sg {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+  @media (max-width: 580px) { .sg { grid-template-columns: 1fr; } }
+  .sc h3 {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .sc ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .sc ul li {
+    font-size: 12px;
+    color: var(--text);
+    padding-left: 14px;
+    position: relative;
+    line-height: 1.5;
+  }
+  .sc ul li::before { content: '›'; position: absolute; left: 0; color: var(--you); }
+
+  @keyframes fd { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fu { from { opacity:0; transform:translateY(16px); } to { opacity:1; transform:translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <div class="hd-eye">Nexad Agency · 售后全流程 · 严格按SOP顺序</div>
+  <h1>冷启专家作战地图</h1>
+  <div class="hd-sub">金色节点 = 你要亲自出手 · 完整保留所有步骤</div>
+</div>
+
+<div class="legend">
+  <div class="li"><div class="ld you"></div>你（冷启专家）</div>
+  <div class="li"><div class="ld max"></div>MAX</div>
+  <div class="li"><div class="ld bd"></div>BD</div>
+  <div class="li"><div class="ld am"></div>AM</div>
+  <div class="li"><div class="ld ops"></div>运营</div>
+  <div class="li"><div class="ld sys"></div>Lorraine / eng</div>
+</div>
+
+<div class="toolbar">
+  <button class="tbtn" onclick="toggleAll(true)">展开全部</button>
+  <button class="tbtn" onclick="toggleAll(false)">收起全部</button>
+  <button class="tbtn active" id="youBtn" onclick="toggleYouOnly()">只看我的节点</button>
+</div>
+
+<div class="flow" id="flow">
+
+  <!-- ══ 建档 ══ -->
+  <div class="stage open" id="s1">
+    <div class="stage-hd" onclick="toggle('s1')">
+      <span class="stage-icon">📁</span>
+      <span class="stage-title">建档阶段</span>
+      <span class="stage-badge b-jian">建档</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+
+      <div class="node">
+        <div class="dot max"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">01</span>BD KMS1 阶段完成 → MAX 移交售前文档</div>
+          <div class="nm">
+            <span class="chip c-who">MAX → BD</span>
+            <span class="chip c-out">输出：售前文档 + 专属龙虾</span>
+            <span class="chip c-note">你还不在场</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot bd"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">02</span>BD 拉客户群（外部群）</div>
+          <div class="nm">
+            <span class="chip c-who">BD</span>
+            <span class="chip c-out">输出：Nexad | &lt;cust.&gt; | Meta & Google</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child">
+        <div class="dot bd"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">02a</span>BD 发送 showcase 至客户群</div>
+          <div class="nm">
+            <span class="chip c-who">BD</span>
+            <span class="chip c-out">输出：Lark 消息</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot am"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">03</span>AM 建立内部 Lark 群，设群名+头像</div>
+          <div class="nm">
+            <span class="chip c-who">AM</span>
+            <span class="chip c-out">输出：Internal!-&lt;cust.&gt;</span>
+            <span class="chip c-note">拉群时选一个非 Nexad 账号设为"外部群"，防止 vendor 看到内部敏感内容</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot mix"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">04</span>BD + AM 建立客户文件夹，归档相关文档</div>
+          <div class="nm">
+            <span class="chip c-who">BD + AM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot am"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">05</span>AM 填写客户管理总表</div>
+          <div class="nm">
+            <span class="chip c-who">AM（仅 Tina 可维护）</span>
+            <span class="chip c-out">输出：多维表格记录</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot am"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">06</span>AM 将客户文件夹放至内部群标签页</div>
+          <div class="nm">
+            <span class="chip c-who">AM</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <!-- ══ 诊断 ══ -->
+  <div class="stage open" id="s2">
+    <div class="stage-hd" onclick="toggle('s2')">
+      <span class="stage-icon">🔍</span>
+      <span class="stage-title">诊断阶段</span>
+      <span class="stage-badge b-zhen">诊断</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+
+      <!-- Onboarding 问卷主线 -->
+      <div class="sub-label">▸ Onboarding 问卷线</div>
+
+      <div class="node">
+        <div class="dot mix"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">07</span>运营 + BD 用 ChatGPT agent 访问客户网站 + 售前文档，预填 Onboarding 问卷</div>
+          <div class="nm">
+            <span class="chip c-who">运营 + BD</span>
+            <span class="chip c-out">输出：预填版问卷</span>
+            <span class="chip c-note">你要接收这份问卷作为诊断输入</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot bd"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">08</span>BD 发送 Onboarding 问卷给客户</div>
+          <div class="nm">
+            <span class="chip c-who">BD</span>
+            <span class="chip c-out">输出：【onboarding questionnaire--&lt;cust.&gt;】</span>
+            <span class="chip c-note">非 Lark 平台用 Google Doc 发送</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot bd"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">09</span>BD 回收客户填写版 Onboarding 问卷</div>
+          <div class="nm">
+            <span class="chip c-who">BD</span>
+            <span class="chip c-out">输出：客户回填版问卷</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Vendor 线（并行） -->
+      <div class="parallel-wrap">
+        <div class="parallel-label">⟳ 与问卷线并行 · Vendor 确认线（BD 全程负责，你不介入）</div>
+
+        <div class="node">
+          <div class="dot bd"></div>
+          <div class="nc">
+            <div class="nt"><span class="seq">10</span>BD 填写询单，同步发给所有 vendor + 答疑</div>
+            <div class="nm">
+              <span class="chip c-who">BD</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="node child">
+          <div class="dot bd"></div>
+          <div class="nc">
+            <div class="nt"><span class="seq">10a</span>Vendor 确认是否接受</div>
+            <div class="nm">
+              <span class="chip c-who">BD</span>
+              <span class="chip c-sla">SLA：发出询单后 24h 内</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="node child">
+          <div class="dot bd"></div>
+          <div class="nc">
+            <div class="nt"><span class="seq">10b</span>BD 分析评估 → 确认合作 vendor</div>
+            <div class="nm">
+              <span class="chip c-who">BD</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 投前调研线（并行） -->
+      <div class="parallel-wrap">
+        <div class="parallel-label">⟳ 与问卷线并行 · 投前调研线（运营执行，你要索取结果）</div>
+
+        <div class="node">
+          <div class="dot mix"></div>
+          <div class="nc">
+            <div class="nt"><span class="seq">11</span>BD + AM 启动客户投前全面调研</div>
+            <div class="nm">
+              <span class="chip c-who">BD + AM 发起</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="node child">
+          <div class="dot ops"></div>
+          <div class="nc">
+            <div class="nt"><span class="seq">11a</span>运营出竞品关键词投放调研报告</div>
+            <div class="nm">
+              <span class="chip c-who">运营</span>
+              <span class="chip c-out">输出：竞品关键词报告</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="node child">
+          <div class="dot ops"></div>
+          <div class="nc">
+            <div class="nt"><span class="seq">11b</span>运营出竞品素材内容调研报告</div>
+            <div class="nm">
+              <span class="chip c-who">运营</span>
+              <span class="chip c-out">输出：竞品素材报告</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="node child">
+          <div class="dot ops"></div>
+          <div class="nc">
+            <div class="nt"><span class="seq">11c</span>运营出产品走查报告</div>
+            <div class="nm">
+              <span class="chip c-who">运营</span>
+              <span class="chip c-out">输出：走查报告</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="node child">
+          <div class="dot mix"></div>
+          <div class="nc">
+            <div class="nt"><span class="seq">11d</span>BD + AM 向客户发送三份报告（含说明话术）</div>
+            <div class="nm">
+              <span class="chip c-who">BD + AM</span>
+              <span class="chip c-out">输出：Lark 消息</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 历史账户诊断线（冷启主导） -->
+      <div class="sub-label" style="margin-top:14px;">▸ 历史账户全面诊断线（你主导 ⭐）</div>
+
+      <div class="node">
+        <div class="dot am"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">12</span>AM 启动历史账户全面诊断（主节点）</div>
+          <div class="nm">
+            <span class="chip c-who">AM</span>
+            <span class="chip c-out">输出：诊断汇报会录音/文稿 + 深度诊断报告</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">12-0</span>⭐ 你与客户确认基本投放目标（KPI）</div>
+          <div class="nm">
+            <span class="chip c-who">你主导</span>
+            <span class="chip c-warn">KPI 不清晰 → 走下方小额测试分支，不要直接开投</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child you" style="margin-left:52px; border-left-color: rgba(232,122,122,0.3);">
+        <div class="dot sys"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">12-0x</span>⚠ KPI 不清晰 → 小额测试分支</div>
+          <div class="nm">
+            <span class="chip c-who">你主导</span>
+            <span class="chip c-warn">① 先建议客户自费测试 ② 不愿则走内部审批 ③ 申请 100~200 刀测目标事件成本</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child">
+        <div class="dot mix"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">12-1</span>AM + eng 收集数据，完成对接</div>
+          <div class="nm">
+            <span class="chip c-who">AM + eng</span>
+            <span class="chip c-out">输出：数据对接完成</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">12-2</span>⭐ 你做链路与埋点预检查</div>
+          <div class="nm">
+            <span class="chip c-who">你主导</span>
+            <span class="chip c-out">输出：前置排查记录（事件链路 / 事件定义 / 权限完整性）</span>
+            <span class="chip c-note">仅老户执行</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">12-3</span>⭐ 你 + 运营出深度诊断报告</div>
+          <div class="nm">
+            <span class="chip c-who">你主导 + 运营辅助</span>
+            <span class="chip c-out">输出：深度诊断报告</span>
+            <span class="chip c-note">可找 William Jin 自动生成初版</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">12-6</span>⭐ 你主持汇报会，敲定投放渠道和预算</div>
+          <div class="nm">
+            <span class="chip c-who">你主导，客户参与</span>
+            <span class="chip c-out">输出：渠道 + 预算方案（会议结论）</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <!-- ══ 基建 ══ -->
+  <div class="stage open" id="s3">
+    <div class="stage-hd" onclick="toggle('s3')">
+      <span class="stage-icon">🏗️</span>
+      <span class="stage-title">基建阶段</span>
+      <span class="stage-badge b-ji">基建</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+
+      <div class="node you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">13</span>⭐ 你发送客户广告代码安装指南 + 埋点列表 SOP</div>
+          <div class="nm">
+            <span class="chip c-who">你主导</span>
+            <span class="chip c-note">按渠道发对应版本（Meta / Google / TikTok）</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot mix"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">14</span>开户（主节点）</div>
+          <div class="nm">
+            <span class="chip c-who">AM + 你 协调</span>
+            <span class="chip c-out">输出：客户广告账户</span>
+            <span class="chip c-warn">实际操作仅 Lorraine 可执行</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child">
+        <div class="dot sys"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">14a</span>Lorraine 代理开户</div>
+          <div class="nm">
+            <span class="chip c-who">Lorraine（唯一可操作）</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">14b</span>⭐ 你 + 埋点专家配置埋点</div>
+          <div class="nm">
+            <span class="chip c-who">你 + 埋点专家</span>
+            <span class="chip c-out">输出：埋点配置完成（事件链路 / 定义 / 权限）</span>
+            <span class="chip c-note">仅新户执行</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child">
+        <div class="dot mix"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">14c</span>运营 + eng 对接相关权限（report / soku / 账户 / MCP）</div>
+          <div class="nm">
+            <span class="chip c-who">运营 + eng</span>
+            <span class="chip c-out">输出：权限全部打通</span>
+            <span class="chip c-note">你需要监控是否完成，未完成不能上线</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child">
+        <div class="dot ops"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">14d</span>运营 给客户加权限</div>
+          <div class="nm">
+            <span class="chip c-who">运营</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child">
+        <div class="dot ops"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">14e</span>运营 充值</div>
+          <div class="nm">
+            <span class="chip c-who">运营</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node child">
+        <div class="dot am"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">14f</span>AM 给 vendor 优化师配马甲号</div>
+          <div class="nm">
+            <span class="chip c-who">AM</span>
+            <span class="chip c-out">输出：马甲号</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">15</span>⭐ 你 + AM 制定广告计划 / 出 media plan</div>
+          <div class="nm">
+            <span class="chip c-who">你主导 + AM 配合</span>
+            <span class="chip c-out">输出：广告计划文档</span>
+            <span class="chip c-note">AI 辅助生成</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">16</span>⭐ AM + 你 确认日报/周报 prompt 初版</div>
+          <div class="nm">
+            <span class="chip c-who">AM + 你</span>
+            <span class="chip c-out">输出：prompt 文档</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">17</span>⭐ 你配置广告上线</div>
+          <div class="nm">
+            <span class="chip c-who">你主导</span>
+            <span class="chip c-warn">上线前必须与客户逐一确认</span>
+            <span class="chip c-out">输出：广告正式启动</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <!-- ══ 日常运营 ══ -->
+  <div class="stage" id="s4">
+    <div class="stage-hd" onclick="toggle('s4')">
+      <span class="stage-icon">📊</span>
+      <span class="stage-title">日常运营阶段</span>
+      <span class="stage-badge b-ops">日常运营</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+
+      <div class="node you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">18</span>⭐ 你 + AM involve 资深优化师 review 投放效果 + 给建议</div>
+          <div class="nm">
+            <span class="chip c-who">你 + AM</span>
+            <span class="chip c-sla">重要客户投放第一周结尾触发</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot am"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">19</span>AM 给优化师分配 report 账号</div>
+          <div class="nm">
+            <span class="chip c-who">AM</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">20</span>⭐ 你交接给 vendor 优化师</div>
+          <div class="nm">
+            <span class="chip c-who">你 → Vendor</span>
+            <span class="chip c-out">输出：项目交接文档</span>
+            <span class="chip c-warn">交接前 2 周先拉 vendor 进群 review，确认无问题再正式交接</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot am"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">21</span>AM 日报 / 周报数据洞察与生成</div>
+          <div class="nm">
+            <span class="chip c-who">AM 主导</span>
+            <span class="chip c-out">输出：日报 / 周报</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node">
+        <div class="dot sys"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">22</span>Lorraine 发送账单 + 余额监控</div>
+          <div class="nm">
+            <span class="chip c-who">Lorraine</span>
+            <span class="chip c-out">输出：月账单</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="node you">
+        <div class="dot you"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">23</span>⭐ 你 + AM 做两周以上维度的数据复盘</div>
+          <div class="nm">
+            <span class="chip c-who">你 + AM</span>
+            <span class="chip c-out">输出：阶段性复盘报告</span>
+            <span class="chip c-sla">测试期过半后触发（开投第三周）</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="arr">↓</div>
+
+  <!-- ══ 退出 ══ -->
+  <div class="stage" id="s5">
+    <div class="stage-hd" onclick="toggle('s5')">
+      <span class="stage-icon">🚪</span>
+      <span class="stage-title">退出阶段</span>
+      <span class="stage-badge b-exit">退出</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="stage-body">
+
+      <div class="node">
+        <div class="dot ops"></div>
+        <div class="nc">
+          <div class="nt"><span class="seq">24</span>运营确认客户退出方案</div>
+          <div class="nm">
+            <span class="chip c-who">运营</span>
+            <span class="chip c-note">你已完成交接，不再介入</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /flow -->
+
+<!-- 总览卡 -->
+<div class="summary">
+  <h2>⭐ 冷启专家 · 核心职责一览</h2>
+  <div class="sg">
+    <div class="sc">
+      <h3>你要拿到的输入</h3>
+      <ul>
+        <li>客户回填的 Onboarding 问卷（BD 给你）</li>
+        <li>竞品关键词 / 素材 / 走查三份报告（运营给你）</li>
+        <li>历史账户数据（AM + eng 对接后给你）</li>
+        <li>客户口述的 KPI 和目标</li>
+      </ul>
+    </div>
+    <div class="sc">
+      <h3>你要产出的输出</h3>
+      <ul>
+        <li>投放目标确认（书面）</li>
+        <li>深度诊断报告</li>
+        <li>渠道 + 预算方案（汇报会结论）</li>
+        <li>广告计划 / media plan</li>
+        <li>埋点配置（新户）</li>
+        <li>广告上线配置</li>
+        <li>项目交接文档</li>
+        <li>阶段性复盘报告</li>
+      </ul>
+    </div>
+    <div class="sc">
+      <h3>谁来配合你</h3>
+      <ul>
+        <li>MAX → 售前移交，你接棒</li>
+        <li>BD → 推进问卷、维护客户关系</li>
+        <li>AM → 数据对接、权限、日报</li>
+        <li>运营 → 调研报告、诊断辅助</li>
+        <li>Lorraine → 开户（你提需求她操作）</li>
+        <li>eng → 权限对接、数据接入</li>
+      </ul>
+    </div>
+    <div class="sc">
+      <h3>你的关键判断点</h3>
+      <ul>
+        <li>KPI 清晰？不清晰先测再投，绝不跳过</li>
+        <li>新户 or 老户？决定埋点 + 预检策略</li>
+        <li>权限全部到位才能上线</li>
+        <li>交接前 2 周拉 vendor 进群 review</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  function toggle(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+  }
+
+  function toggleAll(open) {
+    ['s1','s2','s3','s4','s5'].forEach(id => {
+      const el = document.getElementById(id);
+      if (open) el.classList.add('open');
+      else el.classList.remove('open');
+    });
+  }
+
+  let youMode = false;
+  function toggleYouOnly() {
+    youMode = !youMode;
+    document.getElementById('youBtn').classList.toggle('active', youMode);
+    document.getElementById('youBtn').textContent = youMode ? '显示全部节点' : '只看我的节点';
+    document.querySelectorAll('.node:not(.you)').forEach(n => {
+      n.style.display = youMode ? 'none' : '';
+    });
+    document.querySelectorAll('.sub-label, .parallel-wrap, .parallel-label').forEach(n => {
+      n.style.display = youMode ? 'none' : '';
+    });
+    if (youMode) toggleAll(true);
+  }
+</script>
+</body>
+</html>
