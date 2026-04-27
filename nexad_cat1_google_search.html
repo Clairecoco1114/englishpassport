@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexad · 分类一 Google Search 赛马全流程</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #F7F8FC;
+    --ink: #1A1D2E;
+    --ink-light: #5A5F7A;
+    --ink-faint: #9EA4BC;
+    --bd: #1E3A8A;
+    --bd-light: #EFF4FF;
+    --bd-mid: #BFCFEF;
+    --pm: #0F766E;
+    --pm-light: #EFFBF8;
+    --pm-mid: #99DDD7;
+    --exec: #7C3AED;
+    --exec-light: #F5F0FF;
+    --exec-mid: #C4B0F5;
+    --cold: #B45309;
+    --cold-light: #FFFBEB;
+    --cold-mid: #FCD34D;
+    --green: #059669;
+    --green-light: #ECFDF5;
+    --red: #DC2626;
+    --red-light: #FEF2F2;
+    --amber: #D97706;
+    --ai: #0E7490;
+    --ai-light: #ECFEFF;
+    --ai-mid: #A5F3FC;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans SC', sans-serif; background: var(--bg); color: var(--ink); padding: 48px 32px 80px; }
+
+  .header { text-align: center; margin-bottom: 48px; }
+  .header .eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 12px; }
+  .header h1 { font-size: 28px; font-weight: 700; color: var(--ink); margin-bottom: 8px; }
+  .header .sub { font-size: 13px; color: var(--ink-light); line-height: 1.7; margin-bottom: 16px; }
+  .premise { display: inline-block; background: var(--green-light); border: 1.5px solid #A7F3D0; border-radius: 8px; padding: 8px 20px; font-size: 12px; color: #065F46; font-weight: 600; }
+
+  .canvas { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; }
+
+  /* BLOCK */
+  .block { width: 100%; border-radius: 16px; overflow: hidden; }
+  .block-head { display: flex; align-items: center; gap: 14px; padding: 16px 26px; }
+  .block-num { width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.22); display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: white; flex-shrink: 0; }
+  .block-title { font-size: 14.5px; font-weight: 700; color: white; }
+  .block-tag { margin-left: auto; padding: 3px 12px; background: rgba(255,255,255,0.18); border-radius: 20px; font-size: 10.5px; font-weight: 600; color: rgba(255,255,255,0.9); white-space: nowrap; }
+  .block-body { background: white; border-radius: 0 0 16px 16px; border: 2px solid transparent; border-top: none; padding: 24px 26px 28px; }
+  .block.bd .block-head { background: var(--bd); }
+  .block.bd .block-body { border-color: var(--bd-mid); }
+  .block.pm .block-head { background: var(--pm); }
+  .block.pm .block-body { border-color: var(--pm-mid); }
+  .block.ai-block .block-head { background: var(--ai); }
+  .block.ai-block .block-body { border-color: var(--ai-mid); }
+
+  /* CONNECTOR */
+  .conn { display: flex; flex-direction: column; align-items: center; padding: 4px 0; gap: 2px; }
+  .conn .line { width: 2px; height: 22px; background: #CBD5E1; }
+  .conn .dia { width: 10px; height: 10px; background: #CBD5E1; transform: rotate(45deg); }
+  .conn .lbl { font-size: 10.5px; font-weight: 600; color: var(--ink-faint); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 3px; }
+
+  /* GRID */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  .g4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+
+  .sep { width: 100%; height: 1.5px; background: #E5E7EB; margin: 18px 0; }
+
+  .slabel { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .sbadge { color: white; border-radius: 6px; padding: 3px 12px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+
+  /* NODE */
+  .node { display: flex; gap: 10px; align-items: flex-start; }
+  .nbadge { color: white; border-radius: 6px; padding: 3px 9px; font-size: 10px; font-weight: 700; flex-shrink: 0; margin-top: 3px; white-space: nowrap; }
+  .nbody { flex: 1; border-radius: 8px; padding: 10px 14px; }
+  .ntitle { font-size: 12px; font-weight: 700; color: var(--ink); margin-bottom: 4px; }
+  .ndesc { font-size: 11px; color: var(--ink-light); line-height: 1.55; }
+
+  /* ROLE TAG */
+  .rtag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 9.5px; font-weight: 700; white-space: nowrap; }
+  .rtag.bd { background: var(--bd); color: white; }
+  .rtag.pm { background: var(--pm); color: white; }
+  .rtag.ops { background: var(--exec); color: white; }
+  .rtag.cold { background: var(--cold); color: white; }
+  .rtag.am { background: #475569; color: white; }
+  .rtag.ai { background: var(--ai); color: white; }
+
+  /* CHIP */
+  .chip { display: inline-block; padding: 2px 9px; border-radius: 4px; font-size: 10.5px; margin: 2px; }
+
+  /* TIMELINE */
+  .trow { display: flex; gap: 0; align-items: stretch; margin-bottom: 6px; }
+  .trow-label { flex-shrink: 0; width: 72px; display: flex; align-items: center; justify-content: center; border-radius: 6px 0 0 6px; padding: 8px 4px; font-size: 10px; font-weight: 700; color: white; text-align: center; line-height: 1.3; }
+  .trow-body { flex: 1; border-radius: 0 6px 6px 0; padding: 9px 14px; font-size: 11px; color: var(--ink-light); line-height: 1.55; }
+
+  /* PHASE TABLE */
+  .phase-table { width: 100%; border-radius: 10px; overflow: hidden; margin-bottom: 12px; }
+  .phase-table-head { padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+  .phase-table-head-title { font-size: 12.5px; font-weight: 700; color: white; }
+  .phase-table-head-sub { font-size: 11px; color: rgba(255,255,255,0.8); }
+  .phase-table table { width: 100%; border-collapse: collapse; }
+  .phase-table th { padding: 8px 12px; text-align: left; font-size: 10.5px; font-weight: 700; color: white; }
+  .phase-table td { padding: 8px 12px; font-size: 11px; color: var(--ink-light); line-height: 1.5; border-bottom: 1px solid #E5E7EB; vertical-align: top; }
+  .phase-table tr:last-child td { border-bottom: none; }
+  .phase-table tr:nth-child(odd) td { background: #FAFAFA; }
+  .phase-table tr:nth-child(even) td { background: white; }
+
+  /* WARN / TIP */
+  .warn { background: var(--red-light); border: 1.5px solid #FECACA; border-radius: 8px; padding: 10px 14px; font-size: 11px; color: #7F1D1D; line-height: 1.55; }
+  .tip { background: var(--green-light); border: 1.5px solid #A7F3D0; border-radius: 8px; padding: 10px 14px; font-size: 11px; color: #065F46; line-height: 1.55; }
+  .info { background: var(--ai-light); border: 1.5px solid var(--ai-mid); border-radius: 8px; padding: 10px 14px; font-size: 11px; color: #0E7490; line-height: 1.55; }
+
+  .legend { max-width: 980px; width: 100%; margin: 32px auto 0; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: center; }
+  .legend-item { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-light); }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="eyebrow">Nexad Agency · 分类一客户 · Google Search 赛马场景</div>
+  <h1>客户全流程图</h1>
+  <div class="sub">对方 Google Search 已跑通 ROI > 2 · BD接入 → PM KPI对齐 + Media Plan → 执行交付 → AI持续监控增长</div>
+  <div class="premise">前提：付费渠道已跑出关键指标（关键行为CPA / ROAS）且有一定规模 · 产品风险出清 · 剩下是纯投放问题</div>
+</div>
+
+<div class="canvas">
+
+<!-- ══ BD块 ══ -->
+<div class="block bd" style="width:100%">
+  <div class="block-head">
+    <div class="block-num">BD</div>
+    <div class="block-title">售前：签合同 + 交接PM</div>
+    <div class="block-tag">唯一对接客户</div>
+  </div>
+  <div class="block-body">
+
+    <!-- 产品 + 卖点 -->
+    <div style="background:var(--bd-light);border:1.5px solid var(--bd-mid);border-radius:10px;padding:14px 16px;margin-bottom:20px">
+      <div style="font-size:11.5px;font-weight:700;color:var(--bd);margin-bottom:10px">产品：渠道投放计划 + 付费投放执行（可赛马）</div>
+      <div class="g2">
+        <div>
+          <div style="font-size:10.5px;font-weight:700;color:var(--ink);margin-bottom:6px">我们的卖点</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-size:11px;color:var(--ink-light);display:flex;gap:6px;line-height:1.45"><span style="color:var(--bd);font-weight:700">·</span>KPI达标或更好，效果好</div>
+            <div style="font-size:11px;color:var(--ink-light);display:flex;gap:6px;line-height:1.45"><span style="color:var(--bd);font-weight:700">·</span>数据支撑 + 深度竞品调研</div>
+            <div style="font-size:11px;color:var(--ink-light);display:flex;gap:6px;line-height:1.45"><span style="color:var(--bd);font-weight:700">·</span>帮CMO做GTM，帮渠道负责人做渠道计划</div>
+          </div>
+        </div>
+        <div style="background:var(--ai-light);border:1.5px solid var(--ai-mid);border-radius:8px;padding:10px 12px">
+          <div style="font-size:10.5px;font-weight:700;color:var(--ai);margin-bottom:6px">⚡ 增长速度加倍（核心差异化）</div>
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <div style="font-size:11px;color:#0E7490;display:flex;gap:6px;line-height:1.45"><span style="font-weight:700">·</span>客户不会错失增长机会：AI持续监控历史账户，发现本来可以跑但没跑的词，立刻跑起来</div>
+            <div style="font-size:11px;color:#0E7490;display:flex;gap:6px;line-height:1.45"><span style="font-weight:700">·</span>效率更高：通过优化Quality Score，同样的词CPC更低，排名不输对方</div>
+            <div style="font-size:11px;color:#0E7490;display:flex;gap:6px;line-height:1.45"><span style="font-weight:700">·</span>空间更大：AI不断挖掘增量词，把客户本来就应该有的增长空间还给他</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 关键节点 -->
+    <div class="slabel">
+      <span class="sbadge" style="background:var(--bd)">关键节点</span>
+      <span style="font-size:13px;font-weight:700;color:var(--ink)">BD主导签合同过程</span>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
+      <div class="node">
+        <div class="nbadge" style="background:var(--bd)">① 即时回复</div>
+        <div class="nbody" style="background:var(--bd-light)">
+          <div class="ntitle">群里消息及时回复</div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px"><span class="rtag bd">BD</span><span style="font-size:11px;color:var(--ink-light)">主责</span><span class="rtag am">AM</span><span style="font-size:11px;color:var(--ink-light)">用BD账号回答Q&A范围问题；非Q&A询问BD后回答</span></div>
+        </div>
+      </div>
+      <div class="node">
+        <div class="nbadge" style="background:var(--bd)">② OQ回收</div>
+        <div class="nbody" style="background:var(--bd-light)">
+          <div class="ntitle">给到客户 Onboarding Questionnaire 并回收</div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px"><span class="rtag bd">BD</span><span style="font-size:11px;color:var(--ink-light)">给到客户</span><span class="rtag ops">Ops</span><span style="font-size:11px;color:var(--ink-light)">按标准输出OQ预填版本</span></div>
+          <div style="font-size:10.5px;color:var(--red);margin-top:5px">⚠ OQ回收后立即交PM判断KPI合理性</div>
+        </div>
+      </div>
+      <div class="node">
+        <div class="nbadge" style="background:var(--bd)">③ KPI对齐</div>
+        <div class="nbody" style="background:var(--bd-light)">
+          <div class="ntitle">组织客户和内部的KPI对齐会议</div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px"><span class="rtag bd">BD</span><span style="font-size:11px;color:var(--ink-light)">把OQ给PM，组织会议</span><span class="rtag pm">PM</span><span style="font-size:11px;color:var(--ink-light)">判断KPI合理性，与客户达成共识</span></div>
+        </div>
+      </div>
+      <div class="node">
+        <div class="nbadge" style="background:var(--bd)">④ 四份报告</div>
+        <div class="nbody" style="background:var(--bd-light)">
+          <div class="ntitle">给到客户四份竞品报告</div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px"><span class="rtag bd">BD</span><span style="font-size:11px;color:var(--ink-light)">给到客户</span><span class="rtag ops">运营</span><span style="font-size:11px;color:var(--ink-light)">按标准输出</span></div>
+          <div style="margin-top:6px;display:flex;gap:5px;flex-wrap:wrap">
+            <span class="chip" style="background:var(--exec-light);color:var(--exec);border:1px solid var(--exec-mid)">竞品投放策略报告</span>
+            <span class="chip" style="background:var(--exec-light);color:var(--exec);border:1px solid var(--exec-mid)">竞品关键词报告</span>
+            <span class="chip" style="background:var(--exec-light);color:var(--exec);border:1px solid var(--exec-mid)">竞品素材报告</span>
+            <span class="chip" style="background:var(--exec-light);color:var(--exec);border:1px solid var(--exec-mid)">产品走查报告</span>
+          </div>
+        </div>
+      </div>
+      <div class="node">
+        <div class="nbadge" style="background:var(--bd)">⑤ 诊断会议</div>
+        <div class="nbody" style="background:var(--bd-light)">
+          <div class="ntitle">历史账户诊断报告 + Media Plan 会议</div>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px">
+            <span class="rtag bd">BD</span><span style="font-size:11px;color:var(--ink-light)">组织会议</span>
+            <span class="rtag pm">PM</span><span style="font-size:11px;color:var(--ink-light)">主导诊断结论 + Media Plan讲解</span>
+            <span class="rtag cold">冷启专家</span><span style="font-size:11px;color:var(--ink-light)">输出诊断报告 + Media Plan草稿</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 签合同路径 -->
+    <div style="background:#F8FAFC;border:1.5px solid #CBD5E1;border-radius:10px;padding:12px 16px;margin-bottom:12px">
+      <div style="font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:8px">签合同时序（两条路径都可能）</div>
+      <div class="g2">
+        <div style="background:var(--green-light);border:1.5px solid #A7F3D0;border-radius:8px;padding:10px 12px">
+          <div style="font-size:10.5px;font-weight:700;color:var(--green);margin-bottom:3px">路径 A：先签合同</div>
+          <div style="font-size:11px;color:#065F46;line-height:1.5">客户信任度高直接签 → 合同签完后PM入场做Media Plan</div>
+        </div>
+        <div style="background:var(--cold-light);border:1.5px solid var(--cold-mid);border-radius:8px;padding:10px 12px">
+          <div style="font-size:10.5px;font-weight:700;color:var(--cold);margin-bottom:3px">路径 B：先出Media Plan</div>
+          <div style="font-size:11px;color:#78350F;line-height:1.5">客户需要看计划才签 → PM提前入场辅助出Media Plan → 客户认可 → 签合同</div>
+        </div>
+      </div>
+    </div>
+    <div class="tip">✓ <strong>交接标志：</strong>合同签署完成 + 归档 + 资料移交PM → 正式进入售后</div>
+
+  </div>
+</div>
+
+<div class="conn"><div class="line"></div><div class="dia"></div><div class="line" style="height:16px"></div><div class="lbl">合同签署 → PM接手</div><div class="line" style="height:8px"></div></div>
+
+<!-- ══ PM块 ══ -->
+<div class="block pm" style="width:100%">
+  <div class="block-head">
+    <div class="block-num">PM</div>
+    <div class="block-title">售后：KPI对齐 + Media Plan + 执行管理 + 预期管理</div>
+    <div class="block-tag">唯一对接客户</div>
+  </div>
+  <div class="block-body">
+
+    <!-- Step 1 KPI -->
+    <div class="slabel">
+      <span class="sbadge" style="background:var(--pm)">Step 1</span>
+      <span style="font-size:13px;font-weight:700;color:var(--ink)">OQ回收 → KPI合理性判断 → 达成共识</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px">
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="background:var(--pm);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px">1</div>
+        <div style="flex:1;background:var(--pm-light);border-radius:8px;padding:10px 14px">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px">PM拿到OQ，立刻判断KPI是否合理</div>
+          <div style="font-size:11px;color:var(--ink-light)">不等诊断报告。对照行业benchmark + 客户阶段判断。</div>
+          <div style="font-size:10.5px;color:var(--red);margin-top:4px">⚠ KPI未对齐前，冷启专家不开始做Media Plan</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="background:var(--red);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px">2</div>
+        <div style="flex:1;background:var(--red-light);border:1.5px solid #FECACA;border-radius:8px;padding:10px 14px">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px">KPI不合理 → 与客户沟通达成共识</div>
+          <div style="font-size:11px;color:#7F1D1D">PM准备数据依据，引导客户调整到合理区间。<strong>必须书面确认，不接受口头。</strong></div>
+          <div style="margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="rtag pm">PM</span><span style="font-size:11px;color:var(--ink-light)">主导</span><span class="rtag bd">BD</span><span style="font-size:11px;color:var(--ink-light)">陪同协助</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;align-items:flex-start">
+        <div style="background:var(--green);color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;margin-top:2px">3</div>
+        <div style="flex:1;background:var(--green-light);border:1.5px solid #A7F3D0;border-radius:8px;padding:10px 14px">
+          <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:2px">KPI合理/达成共识 → 通知冷启专家开始做Media Plan</div>
+          <div style="font-size:11px;color:#065F46">书面通知，附上确认的KPI和OQ</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Step 2 Media Plan -->
+    <div class="slabel">
+      <span class="sbadge" style="background:var(--pm)">Step 2</span>
+      <span style="font-size:13px;font-weight:700;color:var(--ink)">赛马前竞争分析 + 制作Media Plan + 客户确认</span>
+    </div>
+
+    <!-- 竞争分析 -->
+    <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">① 赛马前竞争分析（上线前必做）</div>
+    <div style="background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:10px;overflow:hidden;margin-bottom:14px">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr style="background:#1F3864">
+          <th style="padding:8px 12px;color:white;font-size:10.5px;font-weight:700;text-align:left;width:20%">分析维度</th>
+          <th style="padding:8px 12px;color:white;font-size:10.5px;font-weight:700;text-align:left;width:40%">分析内容</th>
+          <th style="padding:8px 12px;color:white;font-size:10.5px;font-weight:700;text-align:left">工具 / 方法</th>
+        </tr>
+        <tr style="background:white"><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">关键词覆盖</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">对方在跑哪些词，覆盖密度如何</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">Auction Insights · SEMrush / Ahrefs · 客户提供账户</td></tr>
+        <tr style="background:#F8FAFF"><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">广告文案角度</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">对方主打什么卖点，标题怎么写</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">Auction Insights · SEMrush / Ahrefs · 客户提供账户</td></tr>
+        <tr style="background:white"><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">落地页结构</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">落地页是否承接广告，转化路径几步</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">人工访问 + 走查报告</td></tr>
+        <tr style="background:#F8FAFF"><td style="padding:8px 12px;color:var(--ink-light)">未覆盖空间</td><td style="padding:8px 12px;color:var(--ink-light)">他没有跑的长尾词、场景词、竞品词</td><td style="padding:8px 12px;color:var(--ink-light)">关键词规划师 · 行业词库调研</td></tr>
+      </table>
+    </div>
+
+    <!-- 词库分类 -->
+    <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">② 词库分类（三类词并行起）</div>
+    <div class="g3" style="margin-bottom:14px">
+      <div style="border-radius:10px;overflow:hidden;border:1.5px solid var(--amber)">
+        <div style="background:var(--amber);padding:8px 12px"><div style="font-size:11px;font-weight:700;color:white">竞争词（对方在跑）</div><div style="font-size:10px;color:rgba(255,255,255,0.85);margin-top:2px">优先级：中（新账户权重低）</div></div>
+        <div style="background:var(--cold-light);padding:10px 12px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:11px;color:#78350F;line-height:1.45">对方已验证的高意图词，正面竞争</div>
+          <div style="font-size:10.5px;color:var(--ink-light)"><strong style="color:var(--ink)">策略：</strong>优化文案+落地页，把Quality Score做得比他高，CPC更低排名不输他</div>
+        </div>
+      </div>
+      <div style="border-radius:10px;overflow:hidden;border:1.5px solid var(--green)">
+        <div style="background:var(--green);padding:8px 12px"><div style="font-size:11px;font-weight:700;color:white">增量词（对方没覆盖）</div><div style="font-size:10px;color:rgba(255,255,255,0.85);margin-top:2px">优先级：高</div></div>
+        <div style="background:var(--green-light);padding:10px 12px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:11px;color:#065F46;line-height:1.45">忽略的长尾词、场景词，成本低意图更具体</div>
+          <div style="font-size:10.5px;color:var(--ink-light)"><strong style="color:var(--ink)">策略：</strong>提前占位，积累数据资产，他遇到天花板时这些词顶上</div>
+        </div>
+      </div>
+      <div style="border-radius:10px;overflow:hidden;border:1.5px solid var(--exec)">
+        <div style="background:var(--exec);padding:8px 12px"><div style="font-size:11px;font-weight:700;color:white">竞品词（对标竞争对手）</div><div style="font-size:10px;color:rgba(255,255,255,0.85);margin-top:2px">优先级：高</div></div>
+        <div style="background:var(--exec-light);padding:10px 12px;display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:11px;color:#5B21B6;line-height:1.45">直接抢竞品用户，意图最强</div>
+          <div style="font-size:10.5px;color:var(--ink-light)"><strong style="color:var(--ink)">策略：</strong>广告文案突出差异化，落地页做对比说明</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 材料 + 制作MP -->
+    <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">③ 收齐材料 + 制作Media Plan</div>
+    <div class="g2" style="margin-bottom:12px">
+      <div style="background:var(--bd-light);border:1.5px solid var(--bd-mid);border-radius:10px;padding:12px 14px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--bd);margin-bottom:6px">有历史账户路径（本场景）</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <div style="font-size:11px;color:var(--ink-light);display:flex;gap:6px;align-items:center"><span class="rtag bd" style="font-size:9px">BD</span>OQ + 客户分级结论</div>
+          <div style="font-size:11px;color:var(--ink-light);display:flex;gap:6px;align-items:center"><span class="rtag ops" style="font-size:9px">运营</span>竞品投放策略/关键词/素材/产品走查四份</div>
+          <div style="font-size:11px;color:var(--ink-light);display:flex;gap:6px;align-items:center"><span class="rtag cold" style="font-size:9px">冷启</span>历史账户诊断报告（对方在跑账户分析）</div>
+        </div>
+      </div>
+      <div style="background:var(--pm-light);border:1.5px solid var(--pm-mid);border-radius:10px;padding:12px 14px">
+        <div style="font-size:10.5px;font-weight:700;color:var(--pm);margin-bottom:6px">Media Plan必须包含</div>
+        <div style="display:flex;gap:4px;flex-wrap:wrap">
+          <span class="chip" style="background:white;color:var(--pm);border:1px solid var(--pm-mid);font-size:10px">KPI+三值+推导逻辑</span>
+          <span class="chip" style="background:white;color:var(--pm);border:1px solid var(--pm-mid);font-size:10px">渠道选择+理由</span>
+          <span class="chip" style="background:white;color:var(--pm);border:1px solid var(--pm-mid);font-size:10px">三类词Campaign结构</span>
+          <span class="chip" style="background:white;color:var(--pm);border:1px solid var(--pm-mid);font-size:10px">预算分配明细</span>
+          <span class="chip" style="background:white;color:var(--pm);border:1px solid var(--pm-mid);font-size:10px">上线Checklist</span>
+          <span class="chip" style="background:white;color:var(--pm);border:1px solid var(--pm-mid);font-size:10px">首月里程碑</span>
+          <span class="chip" style="background:white;color:var(--pm);border:1px solid var(--pm-mid);font-size:10px">学习期说明</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 确认会 -->
+    <div style="background:var(--pm-light);border:1.5px solid var(--pm-mid);border-radius:10px;padding:12px 16px;margin-bottom:6px">
+      <div style="font-size:12px;font-weight:700;color:var(--pm);margin-bottom:8px">④ 与客户 Media Plan 确认会（45-60分钟）</div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px">
+        <div style="font-size:11px;color:var(--ink-light);display:flex;gap:7px"><span style="color:var(--pm);font-weight:700">①</span>呈现历史账户诊断结论，同步客户现状和机会点</div>
+        <div style="font-size:11px;color:var(--ink-light);display:flex;gap:7px"><span style="color:var(--pm);font-weight:700">②</span>确认KPI目标和三值（Target / Test Range / Cut-off），说明各阶段KPI升级路径</div>
+        <div style="font-size:11px;color:var(--ink-light);display:flex;gap:7px"><span style="color:var(--pm);font-weight:700">③</span>说明学习期机制：时间 / 预算 / 不计入赛马比较 / 学习期的钱在帮你布局未来增长空间</div>
+        <div style="font-size:11px;color:var(--ink-light);display:flex;gap:7px"><span style="color:var(--pm);font-weight:700">④</span>逐项确认三类词Campaign结构和预算分配</div>
+        <div style="font-size:11px;color:var(--ink-light);display:flex;gap:7px"><span style="color:var(--pm);font-weight:700">⑤</span>客户书面确认KPI + Media Plan → 同一份文档交冷启专家执行</div>
+      </div>
+      <div class="warn" style="font-size:10.5px">⚠ 必须书面确认，不接受口头</div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Step 3 上线 -->
+    <div class="slabel">
+      <span class="sbadge" style="background:var(--bd)">Step 3</span>
+      <span style="font-size:13px;font-weight:700;color:var(--ink)">广告上线</span>
+    </div>
+    <div class="g3" style="margin-bottom:16px">
+      <div style="background:var(--bd-light);border:1.5px solid var(--bd-mid);border-radius:8px;padding:10px 12px">
+        <div style="font-size:11px;font-weight:700;color:var(--bd);margin-bottom:4px">AM用PM账号回复客户</div>
+        <div style="font-size:11px;color:var(--ink-light);line-height:1.5">Q&A范围直接回答，非Q&A询问PM后回答。客户感知永远在跟PM沟通。</div>
+      </div>
+      <div style="background:var(--bd-light);border:1.5px solid var(--bd-mid);border-radius:8px;padding:10px 12px">
+        <div style="font-size:11px;font-weight:700;color:var(--bd);margin-bottom:4px">上线前Checklist确认</div>
+        <div style="font-size:11px;color:var(--ink-light);line-height:1.5">Pixel / CAPI / UTM / 事件验证 / 素材 / 受众排除全部完成才允许上线</div>
+      </div>
+      <div style="background:var(--bd-light);border:1.5px solid var(--bd-mid);border-radius:8px;padding:10px 12px">
+        <div style="font-size:11px;font-weight:700;color:var(--bd);margin-bottom:4px">按Media Plan上线 + 发启动确认</div>
+        <div style="font-size:11px;color:var(--ink-light);line-height:1.5">三类词分Campaign上线，核对预算，发启动确认给客户，链路检查数据正常</div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Step 4 学习期 -->
+    <div class="slabel">
+      <span class="sbadge" style="background:#6D28D9">Step 4</span>
+      <span style="font-size:13px;font-weight:700;color:var(--ink)">学习期管理（Day 1-14，注册CPA为优化目标）</span>
+    </div>
+
+    <!-- 学习期阶段表 -->
+    <div style="background:#F5F0FF;border:1.5px solid var(--exec-mid);border-radius:10px;overflow:hidden;margin-bottom:12px">
+      <div style="background:#6D28D9;padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:700;color:white">阶段一：学习期 · 以注册CPA为优化目标</span>
+        <span style="font-size:10.5px;color:rgba(255,255,255,0.8)">每个Campaign设最低预算，够产出数据即可</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr style="background:rgba(109,40,217,0.08)">
+          <th style="padding:8px 12px;color:#6D28D9;font-size:10.5px;font-weight:700;text-align:left;width:14%">时间</th>
+          <th style="padding:8px 12px;color:#6D28D9;font-size:10.5px;font-weight:700;text-align:left;width:30%">执行动作</th>
+          <th style="padding:8px 12px;color:#6D28D9;font-size:10.5px;font-weight:700;text-align:left;width:28%">观察指标</th>
+          <th style="padding:8px 12px;color:#6D28D9;font-size:10.5px;font-weight:700;text-align:left">判断标准</th>
+        </tr>
+        <tr><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB;font-weight:600;color:var(--ink)">Day 1 上线</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">三类词分Campaign上线<br>出价策略：Target CPA<br>优化目标：注册事件</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">各词CTR<br>注册量是否有数据<br>账户学习期状态</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">不做最终判断<br>只收集信号<br>排除明显极差方向</td></tr>
+        <tr style="background:#F8F5FF"><td style="padding:8px 12px;color:var(--ink);border-bottom:1px solid #E5E7EB;font-weight:600">Day 3-5 初报</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">汇报客户：注册CPA趋势<br>是否按计划在跑，有无异常</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">注册CPA趋势<br>是否在Test Range内<br>有无超Cut-off方向</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">超Cut-off → 关停<br>在Test Range → 继续<br>达到Target → 记录好词</td></tr>
+        <tr><td style="padding:8px 12px;color:var(--ink);border-bottom:1px solid #E5E7EB;font-weight:600">Day 7 小结</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">汇报客户：保留/淘汰哪些方向<br>注册用户后端付费转化率初步数据</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">注册CPA<br>注册用户付费转化率<br>哪些词后端质量好</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">识别好词：<br>注册CPA达标<br>+ 后端付费转化率OK</td></tr>
+        <tr style="background:#F8F5FF"><td style="padding:8px 12px;color:var(--ink);font-weight:600">Day 14 学习期末</td><td style="padding:8px 12px;color:var(--ink-light)">汇报客户：学习期总结<br>哪些词值得往下走<br>预告下一阶段</td><td style="padding:8px 12px;color:var(--ink-light)">学习期整体转化量<br>好词列表<br>积累的转化信号是否充足</td><td style="padding:8px 12px;color:var(--ink-light)">转化量够30个<br>→ 可进入阶段二<br>不够 → 学习期延长</td></tr>
+      </table>
+    </div>
+
+    <!-- 客户管理表 -->
+    <div class="info" style="margin-bottom:12px">
+      📋 <strong>同步更新客户管理表「学习期广告」Sheet：</strong>记录Target/Test Range/Cut-off、各节点汇报状态、异常情况、判断是否可进入稳定期
+    </div>
+
+    <!-- 学习期异常 -->
+    <div class="g2" style="margin-bottom:16px">
+      <div class="warn">
+        <div style="font-weight:700;margin-bottom:3px">⚠ 客户焦虑 / 要求中途关停</div>
+        主动解释学习期机制，发回学习期说明书。强调学习期结束前不做最终判断，数据波动是平台正常现象，任何Agency都无法保证学习期数据好看。
+        <div style="margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="rtag bd">BD</span><span style="font-size:11px">协助安抚</span><span class="rtag cold">冷启专家</span><span style="font-size:11px">提供实时数据</span></div>
+      </div>
+      <div class="warn">
+        <div style="font-weight:700;margin-bottom:3px">⚠ 真实异常（超预算 / 严重偏离）</div>
+        主动告知客户，说明原因和处理动作，关停极差方向。不等客户来问，先发制人说明。
+        <div style="margin-top:5px;display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="rtag cold">冷启专家</span><span style="font-size:11px">执行关停</span><span class="rtag am">AM+Eng</span><span style="font-size:11px">数据核查</span></div>
+      </div>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Step 5 过渡期 -->
+    <div class="slabel">
+      <span class="sbadge" style="background:var(--cold)">Step 5</span>
+      <span style="font-size:13px;font-weight:700;color:var(--ink)">过渡期（Day 15-30，好词切付费CPA优化）</span>
+    </div>
+    <div style="background:#FFFBEB;border:1.5px solid var(--cold-mid);border-radius:10px;overflow:hidden;margin-bottom:12px">
+      <div style="background:var(--cold);padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:700;color:white">阶段二：过渡期 · 好词切付费CPA</span>
+        <span style="font-size:10.5px;color:rgba(255,255,255,0.8)">原注册Campaign继续跑找新词</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr style="background:rgba(180,83,9,0.08)">
+          <th style="padding:8px 12px;color:var(--cold);font-size:10.5px;font-weight:700;text-align:left;width:14%">时间</th>
+          <th style="padding:8px 12px;color:var(--cold);font-size:10.5px;font-weight:700;text-align:left;width:30%">执行动作</th>
+          <th style="padding:8px 12px;color:var(--cold);font-size:10.5px;font-weight:700;text-align:left;width:28%">观察指标</th>
+          <th style="padding:8px 12px;color:var(--cold);font-size:10.5px;font-weight:700;text-align:left">判断标准</th>
+        </tr>
+        <tr><td style="padding:8px 12px;color:var(--ink);border-bottom:1px solid #E5E7EB;font-weight:600">Day 15 切目标</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">好词单独建新Campaign<br>优化目标改为付费转化事件<br>Target CPA设付费CPA目标值</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">付费CPA趋势<br>付费量积累速度</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">付费CPA在Target内<br>且付费量稳定增长<br>→ 准备进入阶段三</td></tr>
+        <tr style="background:#FFFDF5"><td style="padding:8px 12px;color:var(--ink);border-bottom:1px solid #E5E7EB;font-weight:600">Day 15-30 持续优化</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">文案A/B测试 · 出价策略微调<br>落地页优化 · 继续扩增量词</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">付费CPA vs Target/Test Range<br>付费量周环比 · Quality Score变化</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">持续超Cut-off → 关停<br>在Test Range → 给时间<br>达Target且稳定 → 放量信号</td></tr>
+        <tr><td style="padding:8px 12px;color:var(--ink);font-weight:600">Day 30 阶段末</td><td style="padding:8px 12px;color:var(--ink-light)">汇报：付费CPA数据<br>哪些词付费成本最低<br>与对方ROI差距还有多少</td><td style="padding:8px 12px;color:var(--ink-light)">付费CPA<br>各词ROI估算<br>与Target ROAS的距离</td><td style="padding:8px 12px;color:var(--ink-light)">付费CPA稳定<br>+ Google信号充足<br>→ 可切ROAS优化</td></tr>
+      </table>
+    </div>
+
+    <div class="sep"></div>
+
+    <!-- Step 6 赛马期 -->
+    <div class="slabel">
+      <span class="sbadge" style="background:var(--green)">Step 6</span>
+      <span style="font-size:13px;font-weight:700;color:var(--ink)">赛马期（Day 31+，切ROAS，正式与对方比较）</span>
+    </div>
+    <div style="background:var(--green-light);border:1.5px solid #A7F3D0;border-radius:10px;overflow:hidden;margin-bottom:12px">
+      <div style="background:var(--green);padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:700;color:white">阶段三：赛马期 · 切ROAS，正式与对方比较</span>
+        <span style="font-size:10.5px;color:rgba(255,255,255,0.8)">目标：总体ROI > 2 且放量超过对方</span>
+      </div>
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr style="background:rgba(5,150,105,0.08)">
+          <th style="padding:8px 12px;color:var(--green);font-size:10.5px;font-weight:700;text-align:left;width:14%">时间</th>
+          <th style="padding:8px 12px;color:var(--green);font-size:10.5px;font-weight:700;text-align:left;width:30%">执行动作</th>
+          <th style="padding:8px 12px;color:var(--green);font-size:10.5px;font-weight:700;text-align:left;width:28%">观察指标</th>
+          <th style="padding:8px 12px;color:var(--green);font-size:10.5px;font-weight:700;text-align:left">判断标准</th>
+        </tr>
+        <tr><td style="padding:8px 12px;color:var(--ink);border-bottom:1px solid #D1FAE5;font-weight:600">Day 31 切ROAS</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #D1FAE5">出价策略切换为Target ROAS<br>目标值：ROI > 2（与对方对标）<br>只切付费CPA已稳定的词</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #D1FAE5">ROAS趋势<br>花费规模能否上去<br>Auction Insights与对方对比</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #D1FAE5">ROAS达到 > 2<br>+ 花费可以继续扩<br>→ 进入正式放量</td></tr>
+        <tr style="background:rgba(5,150,105,0.04)"><td style="padding:8px 12px;color:var(--ink);border-bottom:1px solid #D1FAE5;font-weight:600">Day 31+ 持续放量</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #D1FAE5">稳定的词持续加预算<br>增量词持续测试进入好词池<br>监控对方Impression Share变化</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #D1FAE5">我方ROAS vs 对方预估ROAS<br>增量词新增转化贡献<br>对方Impression Share是否下降</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #D1FAE5">我方ROAS更稳定<br>+ 增量词持续贡献<br>→ 总量超过对方是时间问题</td></tr>
+        <tr><td style="padding:8px 12px;color:var(--ink);font-weight:600">持续迭代</td><td style="padding:8px 12px;color:var(--ink-light)">定期复盘词库<br>淘汰老化词，补充新增量词<br>他遇到天花板时我们的词顶上</td><td style="padding:8px 12px;color:var(--ink-light)">对方Impression Share变化<br>新词转化贡献占比<br>ROAS趋势是否持续</td><td style="padding:8px 12px;color:var(--ink-light)">阶段目标：<br>总体ROI > 2<br>且放量超过对方</td></tr>
+      </table>
+    </div>
+
+    <!-- KPI三值 -->
+    <div style="font-size:12px;font-weight:700;color:var(--ink);margin-bottom:8px">KPI 三值设定（参考区间，需书面确认）</div>
+    <div style="background:#F8FAFC;border:1.5px solid #E2E8F0;border-radius:10px;overflow:hidden;margin-bottom:12px">
+      <table style="width:100%;border-collapse:collapse;font-size:11px">
+        <tr style="background:#1F3864"><th style="padding:8px 12px;color:white;font-size:10.5px;font-weight:700;text-align:left">阶段</th><th style="padding:8px 12px;color:white;font-size:10.5px;font-weight:700;text-align:left">Target（目标值）</th><th style="padding:8px 12px;color:white;font-size:10.5px;font-weight:700;text-align:left">Test Range（测试区间）</th><th style="padding:8px 12px;color:white;font-size:10.5px;font-weight:700;text-align:left">Cut-off（止损线）</th></tr>
+        <tr style="background:white"><td style="padding:8px 12px;color:var(--ink);border-bottom:1px solid #E5E7EB;font-weight:600">阶段一 注册CPA</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">待填（参考行业数据）</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">Target × 1.5</td><td style="padding:8px 12px;color:var(--red);border-bottom:1px solid #E5E7EB;font-weight:600">Target × 2 → 关停该方向</td></tr>
+        <tr style="background:#F8FAFF"><td style="padding:8px 12px;color:var(--ink);border-bottom:1px solid #E5E7EB;font-weight:600">阶段二 付费CPA</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">待填（产品单价/毛利反推）</td><td style="padding:8px 12px;color:var(--ink-light);border-bottom:1px solid #E5E7EB">Target × 1.3</td><td style="padding:8px 12px;color:var(--red);border-bottom:1px solid #E5E7EB;font-weight:600">Target × 1.8 → 关停</td></tr>
+        <tr style="background:white"><td style="padding:8px 12px;color:var(--ink);font-weight:600">阶段三 ROAS</td><td style="padding:8px 12px;color:var(--green);font-weight:700">&gt; 2（与对方对标）</td><td style="padding:8px 12px;color:var(--ink-light)">1.5 – 2.0</td><td style="padding:8px 12px;color:var(--red);font-weight:600">&lt; 1.5 且持续下降 → 触发诊断会</td></tr>
+      </table>
+    </div>
+    <div class="warn" style="margin-bottom:16px;font-size:10.5px">⚠ 三值必须在上线前与客户书面确认。学习期内数据波动正常，不按正式Cut-off标准关停，学习期结束后才正式按三值判断。</div>
+
+    <!-- 最终目标 -->
+    <div style="background:#1F3864;border-radius:10px;padding:16px 20px">
+      <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">BD × PM 共同达成的两个目标</div>
+      <div class="g2">
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:700;color:white;margin-bottom:5px">① KPI 尽可能让客户满意</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.8);line-height:1.6">基于真实数据设定，不拍脑袋。三阶段KPI动态升级：注册CPA → 付费CPA → ROAS，每步都有数据支撑。</div>
+        </div>
+        <div style="background:rgba(255,255,255,0.1);border-radius:8px;padding:12px 14px">
+          <div style="font-size:12px;font-weight:700;color:white;margin-bottom:5px">② 客户预期管理没问题</div>
+          <div style="font-size:11px;color:rgba(255,255,255,0.8);line-height:1.6">学习期机制提前说清楚，每阶段都有数据产出，客户不干等。有异常主动说，书面确认有记录可查。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="conn"><div class="line"></div><div class="dia"></div><div class="line" style="height:16px"></div><div class="lbl">稳定放量后持续运营</div><div class="line" style="height:8px"></div></div>
+
+<!-- ══ AI持续监控块 ══ -->
+<div class="block ai-block" style="width:100%">
+  <div class="block-head">
+    <div class="block-num">AI</div>
+    <div class="block-title">AI 持续监控 — 客户不会错失任何增长机会</div>
+    <div class="block-tag">长期运营核心优势</div>
+  </div>
+  <div class="block-body">
+
+    <div style="font-size:12.5px;color:var(--ink-light);line-height:1.7;margin-bottom:20px">
+      客户把历史账户给到我们之后，AI会持续监控。这是我们区别于其他Agency的核心竞争力——<strong style="color:var(--ink)">客户本来可以拿到的增长，一个都不会漏掉。</strong>
+    </div>
+
+    <div class="g2">
+      <div style="background:var(--ai-light);border:1.5px solid var(--ai-mid);border-radius:10px;padding:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--ai);margin-bottom:10px">🔍 持续挖掘增量词</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:11.5px;color:var(--ink-light);display:flex;gap:7px;line-height:1.5"><span style="color:var(--ai);font-weight:700">·</span>AI持续监控历史账户，发现本来可以跑但还没跑的词</div>
+          <div style="font-size:11.5px;color:var(--ink-light);display:flex;gap:7px;line-height:1.5"><span style="color:var(--ai);font-weight:700">·</span>市场上新出现的长尾词、场景词、竞品词，AI自动识别并推入测试</div>
+          <div style="font-size:11.5px;color:var(--ink-light);display:flex;gap:7px;line-height:1.5"><span style="color:var(--ai);font-weight:700">·</span>对方遇到天花板、Impression Share开始下降时，我们的增量词已经跑通，无缝接上</div>
+        </div>
+      </div>
+      <div style="background:var(--ai-light);border:1.5px solid var(--ai-mid);border-radius:10px;padding:16px">
+        <div style="font-size:12px;font-weight:700;color:var(--ai);margin-bottom:10px">⚡ 持续优化Quality Score</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:11.5px;color:var(--ink-light);display:flex;gap:7px;line-height:1.5"><span style="color:var(--ai);font-weight:700">·</span>持续监控对方在跑词的Quality Score，找到我们可以超越的机会点</div>
+          <div style="font-size:11.5px;color:var(--ink-light);display:flex;gap:7px;line-height:1.5"><span style="color:var(--ai);font-weight:700">·</span>广告文案相关性、落地页体验持续迭代，把Quality Score做得比对方高</div>
+          <div style="font-size:11.5px;color:var(--ink-light);display:flex;gap:7px;line-height:1.5"><span style="color:var(--ai);font-weight:700">·</span>Quality Score更高 → CPC更低 → 同样预算拿到更多转化 → ROI更稳定</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;background:#1F3864;border-radius:10px;padding:14px 18px;text-align:center">
+      <div style="font-size:13px;font-weight:700;color:white;margin-bottom:6px">我们不只是在跟对方抢同样的词</div>
+      <div style="font-size:12px;color:rgba(255,255,255,0.85);line-height:1.7">我们在帮客户系统性地找到他还没有覆盖的增长空间。<br>他跑量跑到天花板的时候，我们的词已经跑通了，可以无缝接上。</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- LEGEND -->
+<div class="legend">
+  <div class="legend-item"><div class="legend-dot" style="background:var(--bd)"></div>BD</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--pm)"></div>PM</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--exec)"></div>运营/Ops</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--cold)"></div>冷启专家</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#475569"></div>AM</div>
+  <div class="legend-item"><div class="legend-dot" style="background:var(--ai)"></div>AI持续监控</div>
+  <div class="legend-item" style="margin-left:auto;font-size:11px;color:var(--ink-faint);font-style:italic">Nexad · 分类一 · Google Search赛马场景</div>
+</div>
+
+</div>
+</body>
+</html>
